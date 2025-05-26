@@ -1,16 +1,10 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
 
-// Note that some adapters may set a maximum length for the String type by default, please ensure your strings are long
-// enough when changing adapters.
-// See https://www.prisma.io/docs/orm/reference/prisma-schema-reference#string for more information
 datasource db {
-  provider = "sqlite"
-  url      = "file:dev.sqlite"
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 model Session {
@@ -21,7 +15,7 @@ model Session {
   scope         String?
   expires       DateTime?
   accessToken   String
-  userId        BigInt?
+  userId        BigInt?   @db.BigInt
   firstName     String?
   lastName      String?
   email         String?
@@ -29,4 +23,39 @@ model Session {
   locale        String?
   collaborator  Boolean?  @default(false)
   emailVerified Boolean?  @default(false)
+}
+
+model Shop {
+  id          String             @id @default(cuid())
+  shop        String             @unique
+  accessToken String
+  createdAt   DateTime           @default(now())
+  customers   CustomerBirthday[]
+  upsellRules UpsellRule[]
+}
+
+model CustomerBirthday {
+  id        String                 @id @default(cuid())
+  email     String
+  birthDate DateTime
+  shopId    String
+  shop      Shop                   @relation(fields: [shopId], references: [id])
+  emails    BirthdayEmailHistory[]
+
+  @@unique([email, shopId])
+}
+
+model BirthdayEmailHistory {
+  id         String           @id @default(cuid())
+  customerId String
+  sentAt     DateTime         @default(now())
+  customer   CustomerBirthday @relation(fields: [customerId], references: [id])
+}
+
+model UpsellRule {
+  id                  String @id @default(cuid())
+  mainProductId       String
+  suggestedProductIds Json
+  shopId              String
+  shop                Shop   @relation(fields: [shopId], references: [id])
 }
