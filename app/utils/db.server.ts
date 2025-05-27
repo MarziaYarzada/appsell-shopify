@@ -5,7 +5,7 @@ declare global {
   var prismaGlobal: PrismaClient;
 }
 
-if (process.env.NODE_ENV !== "production") {
+if (process.env.NODE_ENV !== "production") {1
   if (!global.prismaGlobal) {
     global.prismaGlobal = new PrismaClient();
   }
